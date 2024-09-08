@@ -8,7 +8,7 @@
         <div class="col-md-6 offset-md-3">
             {% for task in tasks %}
             <dl class="list-group">
-                <a href="{% url 'task_detail' task.id %}" class="list-group-item">
+                <a href="{% url 'tasks:task_detail' task.id %}" class="list-group-item">
                     <header class="d-flex justify-content-between">
                         {% if task.important %}
                         <h1 class="fw-bold text-success">{{ task.title }}</h1>

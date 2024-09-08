@@ -1,16 +1,16 @@
 from django.urls import path
 from . import views
 
-urlpatterns = [
-    path("", views.home, name="home"),
+tasks_patterns = ([
+    path("", views.HomePageView.as_view(), name="home"),
     path("signup/", views.signup, name="signup"),
-    path("tasks/", views.tasks, name="tasks"),
-    path("tasks/completed", views.tasks_completed, name="tasks_completed"),
-    path("tasks/create/", views.create_task, name="create_task"),
-    path("tasks/task_detail/<int:task_id>", views.task_detail, name="task_detail"),
-    path("tasks/task_detail/<int:task_id>/complete", views.complete_task, name="complete_task"),
-    path("tasks/task_detail/<int:task_id>/delete", views.delete_task, name="delete_task"),
-    path("logout/", views.signout, name="logout"),
+    path("tasks/pending", views.TaskPendingListView.as_view(), name="tasks_pending"),
+    path("tasks/completed", views.TaskCompletedListView.as_view(), name="tasks_completed"),
+    path("tasks/create/", views.TaskCreateView.as_view(), name="create_task"),
+    path("tasks/task_detail/<int:pk>", views.TaskUpdateView.as_view(), name="task_detail"),
+    path("tasks/task_detail/<int:pk>/complete", views.TaskCompleteView.as_view(), name="complete_task"),
+    path("tasks/task_detail/<int:pk>/delete", views.TaskDeleteView.as_view(), name="delete_task"),
+    path("logout/", views.LogoutView.as_view(), name="logout"),
     # path("signin/", views.signin, name="signin"),
-    path("signin/", views.CustomLoginView.as_view(), name="signin"),
-]
+    path("signin/", views.LoginView.as_view(), name="signin"),
+],'tasks')

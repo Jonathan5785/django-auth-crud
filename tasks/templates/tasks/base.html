@@ -25,23 +25,27 @@
     
                 {% if user.is_authenticated %}
                 <li class="nav-item">
-                    <a href="{% url 'tasks' %}" class="nav-link">Tasks</a>
+                    <a href="{% url 'tasks:tasks_pending' %}" class="nav-link">Tasks Pending</a>
                 </li>
                 <li class="nav-item">
-                    <a href="{% url 'tasks_completed' %}" class="nav-link">Tasks Completed</a>
+                    <a href="{% url 'tasks:tasks_completed' %}" class="nav-link">Tasks Completed</a>
                 </li>
                 <li class="nav-item">
-                    <a href="{% url 'create_task' %}" class="nav-link">Create Task</a>
+                    <a href="{% url 'tasks:create_task' %}" class="nav-link">Create Task</a>
                 </li>
                 <li class="nav-item">
-                    <a href="{% url 'logout' %}" class="nav-link">Logout</a>
+                    <!-- <a href="{% url 'tasks:logout' %}" class="nav-link">Logout</a> -->
+                    <form action="{% url 'tasks:logout' %}" method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="nav-link">Logout</button>
+                    </form>
                 </li>
                 {% else %}
                 <li class="nav-item">
-                    <a href="{% url 'signup' %}" class="nav-link">Signup</a>
+                    <a href="{% url 'tasks:signup' %}" class="nav-link">Signup</a>
                 </li>
                 <li class="nav-item">
-                    <a href="{% url 'signin' %}" class="nav-link">Signin</a>
+                    <a href="{% url 'tasks:signin' %}" class="nav-link">Signin</a>
                 </li>
                 {% endif %}
             </ul>

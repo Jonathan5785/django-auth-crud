@@ -19,23 +19,24 @@
                 
             </form>
             
-            
-            <div class="d-flex justify-content-between">
-                <form action="{% url 'complete_task' task.id %}" method="post">
-                    {% csrf_token %}
-                    <button class="btn btn-secondary">
-                        Complete
-                    </button>
-                </form>
-                
-                
-                <form action="{% url 'delete_task' task.id %}">
-                    {% csrf_token %}
-                    <button class="btn btn-danger">
-                        Detele
-                    </button>
-                </form>
-            </div>
+            {% if not task.datecompleted %}
+                <div class="d-flex justify-content-between">
+                    <form action="{% url 'tasks:complete_task' task.id %}" method="post">
+                        {% csrf_token %}
+                        <button class="btn btn-secondary">
+                            Complete
+                        </button>
+                    </form>
+                    
+                    
+                    <form action="{% url 'tasks:delete_task' task.id %}">
+                        {% csrf_token %}
+                        <button class="btn btn-danger">
+                            Delete
+                        </button>
+                    </form>
+                </div>
+            {% endif %}
         </div>
     </div>
 </main>
