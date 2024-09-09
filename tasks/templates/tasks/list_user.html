@@ -1,0 +1,48 @@
+{% extends 'tasks/base.html' %}
+{% block content %}
+    
+    <main class="container py-5">
+        <div class="buttons">
+            <a class="btn btn-primary" href="{% url 'web:home' %}">Volver</a>
+            <a class="btn btn-success" href="{% url 'web:user:signup' %}">Crear</a>
+        </div>
+        {% if not object_list %}
+            No hay usuarios registrados.
+        {% else %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Usuario</th>
+                        <th>Nombres</th>
+                        <th>Apellidos</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th>Editar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for object in object_list %}
+                        <tr>
+                            <td>{{ object.id }}</td>
+                            <td>{{ object.username }}</td>
+                            <td>{{ object.first_name }}</td>
+                            <td>{{ object.last_name }}</td>
+                            <td>{{ object.role.name }}</td>
+                            <td>
+                                {% if object.is_active %}
+                                    ACTIVO ✅
+                                {% else %}
+                                    INACTIVO ❌
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'web:user:update' object.id %}">✏️</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </main>
+{% endblock %}

@@ -1,11 +1,11 @@
-from audioop import reverse
-from typing import Any
-from django.db.models.query import QuerySet
+
+from django import forms
+from django.http.response import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.models import User
+
 from django.contrib.auth import login,logout,authenticate
 from django.db import IntegrityError
-from .forms import TaskForm,CustomUserCreationForm,CustomAuthenticationForm
+from .forms import TaskForm,AuthenticationForm,CustomUserCreationForm,UserUpdateForm
 from .models import Task
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required # para proteger las rutas
@@ -20,6 +20,9 @@ from django.views.generic.edit import CreateView
 from django.views.generic.edit import UpdateView
 from django.views.generic.edit import DeleteView
 from django.views import View
+from .mixins import UserIsAdminMixin
+from .models import User
+from tasks import forms
 
 # Create your views here.
 
@@ -27,36 +30,64 @@ from django.views import View
 
 class HomePageView(TemplateView):
     template_name = 'tasks/home.html'
+
 # def home(request):
 #     return render(request, "tasks/home.html")
 
+class UserListView(LoginRequiredMixin,UserIsAdminMixin,ListView):
+    template_name = 'tasks/list_user.html'
+    model = User
 
-def signup(request):
-    if request.method == "GET":
-        return render(request, "tasks/signup.html", {"form": CustomUserCreationForm})
-    else:
-        if request.POST["password1"] == request.POST["password2"]:
-            try:
-                user = User.objects.create_user(
-                    username=request.POST["username"],
-                    password=request.POST["password1"],
-                )
-                user.save()
-                login(request, user) # con esto se guarda la sesion del usuario que se acaba de registrar
-                return redirect("tasks")
-            except IntegrityError:
 
-                return render(
-                    request,
-                    "tasks/signup.html",
-                    {"form": CustomUserCreationForm, "error": "User already exists"},
-                )
+class UserUpdateView(LoginRequiredMixin,UserIsAdminMixin,UpdateView):
+    template_name = 'tasks/update_user.html'
+    model = User
+    form_class = UserUpdateForm
+    pk_url_kwarg = 'user_id'
+    success_url = reverse_lazy('web:user:list')
 
-        return render(
-            request,
-            "tasks/signup.html",
-            {"form": CustomUserCreationForm, "error": "Passwords do not match"},
-        )
+
+
+class UserCreateView(LoginRequiredMixin,UserIsAdminMixin,CreateView):
+    template_name = 'tasks/signup.html'
+    form_class = CustomUserCreationForm
+    success_url = reverse_lazy('web:home')
+
+    def form_valid(self, form: CustomUserCreationForm) -> HttpResponse:
+        user: User = form.instance
+        user.set_password(form.cleaned_data['password'])
+        return super().form_valid(form)
+    
+
+
+
+# signup
+# def UserCreateView(request):
+#     if request.method == "GET":
+#         return render(request, "tasks/signup.html", {"form": CustomUserCreationForm})
+#     else:
+#         if request.POST["password1"] == request.POST["password2"]:
+#             try:
+#                 user = User.objects.create_user(
+#                     username=request.POST["username"],
+#                     password=request.POST["password1"],
+#                 )
+#                 user.save()
+#                 login(request, user) # con esto se guarda la sesion del usuario que se acaba de registrar
+#                 return redirect("tasks")
+#             except IntegrityError:
+
+#                 return render(
+#                     request,
+#                     "tasks/signup.html",
+#                     {"form": CustomUserCreationForm, "error": "User already exists"},
+#                 )
+
+#         return render(
+#             request,
+#             "tasks/signup.html",
+#             {"form": CustomUserCreationForm, "error": "Passwords do not match"},
+#         )
 
 
 class TaskPendingListView(LoginRequiredMixin,ListView):
@@ -92,8 +123,8 @@ class TaskCreateView(LoginRequiredMixin,CreateView):
     model = Task
     template_name = 'tasks/create_task.html'
     form_class = TaskForm
-    login_url = 'tasks:signin'
-    success_url = reverse_lazy('tasks:tasks_pending')
+    login_url = 'web:signin'
+    success_url = reverse_lazy('web:tasks:tasks_pending')
 
     def form_valid(self, form): # Es para asignar el usuario
         form.instance.user = self.request.user
@@ -122,7 +153,7 @@ class TaskUpdateView(LoginRequiredMixin,UpdateView): # Uso UpdateView porque en 
     form_class = TaskForm
     login_url = 'tasks:signin'
     context_object_name = 'task'
-    success_url = reverse_lazy('tasks:tasks_pending')
+    success_url = reverse_lazy('web:tasks:tasks_pending')
 
     def get_queryset(self): # con esto me aseguro qwue se puedan actualizar solo las tareas del usuario logueado
         return Task.objects.filter(user=self.request.user)
@@ -149,7 +180,7 @@ class TaskCompleteView(LoginRequiredMixin, UpdateView):
     model = Task
     fields = []  # No necesitas un formulario, ya que no se editan campos desde el formulario
     login_url = 'tasks:signin'
-    success_url = reverse_lazy('tasks:tasks_pending')
+    success_url = reverse_lazy('web:tasks:tasks_pending')
 
     def form_valid(self, form):
         task = form.save(commit=False)
@@ -174,7 +205,7 @@ class TaskCompleteView(LoginRequiredMixin, UpdateView):
 class TaskDeleteView(LoginRequiredMixin,DeleteView):
     model = Task
     template_name = 'tasks/task_confirm_delete.html'
-    success_url = reverse_lazy('tasks:tasks_pending')
+    success_url = reverse_lazy('web:tasks:tasks_pending')
     login_url = 'tasks:signin'
 
     def get_queryset(self):
@@ -190,7 +221,7 @@ class TaskDeleteView(LoginRequiredMixin,DeleteView):
 
 class LogoutView(LoginRequiredMixin,View):
     def post(self,request):
-        return auth_views.logout_then_login(request,login_url=reverse_lazy('tasks:signin'))
+        return auth_views.logout_then_login(request,login_url=reverse_lazy('web:signin'))
 # @login_required
 # def signout(request):
 #     logout(request) # con esto se cierra sesion
@@ -199,11 +230,18 @@ class LogoutView(LoginRequiredMixin,View):
 
 
 class LoginView(auth_views.LoginView):
-    form_class = CustomAuthenticationForm  # Formulario personalizado
+    authentication_form = AuthenticationForm  # Formulario personalizado
     template_name = 'tasks/signin.html'  # Plantilla que renderizará el formulario
     redirect_authenticated_user = True  # Redirige al usuario si ya está autenticado
-    next_page = reverse_lazy('tasks:home')  # URL a la que redirigir después de un login exitoso (opcional)
+    next_page = reverse_lazy('web:home')  # URL a la que redirigir después de un login exitoso (opcional)
 
+
+
+
+class PasswordChangeView(LoginRequiredMixin,auth_views.PasswordChangeView):
+    template_name = 'tasks/password-change.html'
+    success_url = reverse_lazy('web:home')
+    
 
 # def signin(request):
 #     if request.method == 'GET':

@@ -9,8 +9,8 @@
         <div class="text-center">
             
             {% if not user.is_authenticated %}
-            <a href="{% url 'tasks:signup' %}" class="btn btn-primary">Signup</a>
-            <a href="{% url 'tasks:signin' %}" class="btn btn-primary">Signin</a>
+            
+            <a href="{% url 'web:signin' %}" class="btn btn-primary">Signin</a>
             {% endif %}
         </div>
     </section>

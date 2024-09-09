@@ -13,39 +13,51 @@
     <nav class="navbar navbar-expand-lg bg-dark navbar-dark">
         <div class="container">
           <a class="navbar-brand" href="/">Django App</a>
+          <!-- Mostrar el saludo si el usuario está autenticado -->
+          {% if user.is_authenticated %}
+              <span class="navbar-text text-light">
+                Hola, {{ user.username }}
+              </span>
+          {% endif %}
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
           <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a href="/" class="nav-link">Home</a>
+                    <a href="/" class="nav-link {% if request.resolver_match.view_name == 'web:home' %}active{% endif %}">Home</a>
                 </li>
                 
     
                 {% if user.is_authenticated %}
                 <li class="nav-item">
-                    <a href="{% url 'tasks:tasks_pending' %}" class="nav-link">Tasks Pending</a>
+                    <a href="{% url 'web:tasks:tasks_pending' %}" class="nav-link {% if request.resolver_match.view_name == 'web:tasks:tasks_pending' %}active{% endif %}">Tasks Pending</a>
                 </li>
                 <li class="nav-item">
-                    <a href="{% url 'tasks:tasks_completed' %}" class="nav-link">Tasks Completed</a>
+                    <a href="{% url 'web:tasks:tasks_completed' %}" class="nav-link {% if request.resolver_match.view_name == 'web:tasks:tasks_completed' %}active{% endif %}">Tasks Completed</a>
                 </li>
                 <li class="nav-item">
-                    <a href="{% url 'tasks:create_task' %}" class="nav-link">Create Task</a>
+                    <a href="{% url 'web:tasks:create_task' %}" class="nav-link {% if request.resolver_match.view_name == 'web:tasks:create_task' %}active{% endif %}">Create Task</a>
+                </li>
+                {% if user.is_admin %}
+                    <li class="nav-item"></li>
+                        <a href="{% url 'web:user:list' %}" class="nav-link {% if request.resolver_match.view_name == 'web:user:list' or request.resolver_match.view_name == 'web:user:signup' or request.resolver_match.view_name == 'web:user:update' %}active{% endif %}">Usuarios</a>
+                    </li>
+                {% endif %}
+                <li class="nav-item"></li>
+                    <a href="{% url 'web:password-change' %}" class="nav-link {% if request.resolver_match.view_name == 'web:password-change' %}active{% endif %}">Change Password</a>
                 </li>
                 <li class="nav-item">
-                    <!-- <a href="{% url 'tasks:logout' %}" class="nav-link">Logout</a> -->
-                    <form action="{% url 'tasks:logout' %}" method="post" class="d-inline">
+                    
+                    <form action="{% url 'web:logout' %}" method="post" class="d-inline">
                         {% csrf_token %}
                         <button type="submit" class="nav-link">Logout</button>
                     </form>
                 </li>
                 {% else %}
+                
                 <li class="nav-item">
-                    <a href="{% url 'tasks:signup' %}" class="nav-link">Signup</a>
-                </li>
-                <li class="nav-item">
-                    <a href="{% url 'tasks:signin' %}" class="nav-link">Signin</a>
+                    <a href="{% url 'web:signin' %}" class="nav-link {% if request.resolver_match.view_name == 'web:signin' %}active{% endif %}">Signin</a>
                 </li>
                 {% endif %}
             </ul>

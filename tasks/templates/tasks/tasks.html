@@ -1,14 +1,27 @@
 {% extends 'tasks/base.html' %}
 
 {% block content %}
-<h1 class="text-center">Tasks Pending</h1>
+<!-- <h1 class="text-center">Tasks Pending</h1> -->
+
+{% if tasks %}
+    {% if tasks.0.datecompleted %}
+        <h1 class="text-center">Tasks Completed</h1>
+    {% else %}
+        <h1 class="text-center">Tasks Pending</h1>
+    {% endif %}
+{% else %}
+    <h2 class="text-center">No hay tareas</h2>
+
+{% endif %}
+        
+
 
 <main class="container">
     <div class="row">
         <div class="col-md-6 offset-md-3">
             {% for task in tasks %}
             <dl class="list-group">
-                <a href="{% url 'tasks:task_detail' task.id %}" class="list-group-item">
+                <a href="{% url 'web:tasks:task_detail' task.id %}" class="list-group-item">
                     <header class="d-flex justify-content-between">
                         {% if task.important %}
                         <h1 class="fw-bold text-success">{{ task.title }}</h1>
@@ -19,7 +32,7 @@
                     </header>
 
                     <p>{{ task.description }}</p>
-                    <p>{{ task.datecompleted | date:' M j Y:i '}}</p>
+                    <p>{{ task.datecompleted | date:'F j, Y, g:i a'}}</p>
                     
                 </a>
             
